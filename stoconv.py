@@ -21,8 +21,8 @@ def filter_article(ref, name, storage, num, price):
     availability, storage, etc...
     Return True if the article need to be kept, False otherwise.
     '''
-    # p = re.compile('^G.*|^VITRINE.*|^MOTO EXPO.*|^PALETTE.*')
-    return  (int(ref[0:2])>= 96) # and (num > 0) and (None != re.match(p, storage))
+    p = re.compile('^G.*|^VITRINE.*|^MOTO EXPO.*|^PALETTE.*')
+    return  (int(ref[0:2])>= 96) and (num > 0) and (None != re.match(p, storage))
 
 def get_img_url(ref, title):
     '''Given a product's reference, returns an image URL that should correspond
@@ -63,11 +63,11 @@ def create_dict(filepath):
         try:
             reference = row[0].strip()
             product_name = row[1].strip()
-            # storage = row[2].strip()
-            num_available = float(row[7])
-            price = float(row[4])
+            storage = row[2].strip()
+            num_available = float(row[3])
+            price = float(row[5])
 
-            if not filter_article(reference, product_name, None, num_available, price):
+            if not filter_article(reference, product_name, storage, num_available, price):
                 continue
 
             imgurl = get_img_url(reference, product_name)
@@ -81,7 +81,7 @@ def create_dict(filepath):
         d['ref'].append(reference)
         d['name'].append(product_name)
         d['image'].append(imgurl)
-        # d['storage'].append(storage)
+        d['storage'].append(storage)
         d['num'].append(num_available)
         d['bying_price_ht'].append(price)
     d['num_articles'] = i
@@ -90,7 +90,7 @@ def create_dict(filepath):
 def write_csv(d):
     '''Write the converted CSV from the input dictionary'''
     writer = csv.writer(sys.stdout, delimiter=';')
-    writer.writerow(['Reference', 'Title', 'Image', 'Availability', 'Price HT', 'Price'])
+    writer.writerow(['Reference', 'Title', 'Image', 'Storage', 'Availability', 'Price HT', 'Price'])
     for i in range(d['num_articles']):
 
         price_ht = d['bying_price_ht'][i]
@@ -102,7 +102,7 @@ def write_csv(d):
                 d['ref'][i],
                 d['name'][i],
                 d['image'][i],
-                # d['storage'][i],
+                d['storage'][i],
                 int(d['num'][i]),
                 d['bying_price_ht'][i],
                 "{0:.2f}".format(customer_price),
